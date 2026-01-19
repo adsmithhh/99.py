@@ -25,7 +25,7 @@ def calculate_statistics(state):
         for i in range(state.config.dimensions):
             avg_position[i] += particle['position'][i]
     
-    for i in range(len(avg_position)):
+    for i in range(state.config.dimensions):
         avg_position[i] /= len(state.particles)
     
     # Calculate average velocity magnitude
