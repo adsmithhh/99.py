@@ -1,0 +1,555 @@
+﻿# Coherence Trust System - Work Modes & Territory Config
+# Money/Energy/etc are OUTPUT MODES, not fixed values
+
+display:
+  width: 1510
+  height: 900
+  fps: 90
+
+colors:
+  BLACK: [0, 0, 0]
+  WHITE: [255, 255, 255]
+  TEAL: [26, 153, 153]
+  ORANGE: [204, 136, 68]
+  RED_ORANGE: [255, 107, 74]
+  GREEN: [45, 122, 45]
+  LIME: [100, 255, 100]
+  GREEN_TEXT: [0, 170, 0]
+  RED_TEXT: [200, 50, 50]
+  YELLOW_TEXT: [220, 200, 100]
+  TRADE_COLOR: [200, 180, 100]
+  DEV_COLOR: [100, 150, 200]
+  FLEX_COLOR: [200, 100, 100]
+  GOLD: [255, 215, 0]
+
+fonts:
+  header: 38
+  large: 55
+  small: 27
+  tiny: 21
+
+# ===== WORK MODES (fundamental abstraction) =====
+# Each zone can output work in multiple modes
+# Money/Energy/Stress are OUTPUT VALUATIONS of the same work
+work_modes:
+  MATERIAL:
+    name: "Material Output"
+    symbol: "$"
+    color: [100, 255, 100]
+    description: "Tangible goods, resources"
+    valuation_range: [5.0, 20.0]
+  
+  ENERGY:
+    name: "Energy Output"
+    symbol: "E"
+    color: [255, 200, 100]
+    description: "Stamina, vitality"
+    valuation_range: [10.0, 30.0]
+  
+  SOCIAL:
+    name: "Social Output"
+    symbol: "S"
+    color: [100, 200, 255]
+    description: "Trust, relationships"
+    valuation_range: [0.1, 0.5]
+  
+  KNOWLEDGE:
+    name: "Knowledge Output"
+    symbol: "K"
+    color: [200, 100, 255]
+    description: "Learning, skills"
+    valuation_range: [0.5, 2.0]
+  
+  STABILITY:
+    name: "Stability Output"
+    symbol: "St"
+    color: [200, 100, 100]
+    description: "Stress relief, coherence"
+    valuation_range: [-40.0, 40.0]
+
+# ===== ZONES WITH WORK MODE PROFILES =====
+zones:
+  SCIENCE:
+    color: "TEAL"
+    display_color: [100, 200, 255]
+    description: "Learning & Discovery"
+    
+    # Each zone produces multiple modes
+    work_output_modes:
+      KNOWLEDGE:
+        efficiency: 1.5
+        cost_self_esteem: 0.02
+      SOCIAL:
+        efficiency: 0.6
+        cost_self_esteem: 0.01
+      MATERIAL:
+        efficiency: 0.4
+        cost_money_multiplier: 1.5  # Expensive
+      STABILITY:
+        efficiency: 0.8
+        cost_energy: 0.5
+    
+    zone_bonuses:
+      low_coherence_attraction: 1.6
+      skill_scaling: 0.5
+  
+  TRADE:
+    color: "TRADE_COLOR"
+    display_color: [200, 180, 100]
+    description: "Exchange & Value"
+    
+    work_output_modes:
+      MATERIAL:
+        efficiency: 2.0
+        cost_stress_multiplier: 1.3
+      STABILITY:
+        efficiency: -0.3  # Generates stress
+      SOCIAL:
+        efficiency: 0.8
+      KNOWLEDGE:
+        efficiency: 0.3
+      ENERGY:
+        efficiency: -0.5  # Drains energy
+    
+    zone_bonuses:
+      money_pressure_attraction: 2.2
+      stress_generation: 0.4
+  
+  DEVELOPMENT:
+    color: "DEV_COLOR"
+    display_color: [100, 150, 200]
+    description: "Production & Stability"
+    
+    work_output_modes:
+      ENERGY:
+        efficiency: 2.2
+        cost_self_esteем: 0.04
+      MATERIAL:
+        efficiency: 1.5
+      KNOWLEDGE:
+        efficiency: 0.7
+      STABILITY:
+        efficiency: 0.5
+      SOCIAL:
+        efficiency: 0.3
+    
+    zone_bonuses:
+      energy_deficit_attraction: 0.8
+      coherence_scaling: 0.8
+  
+  FLEX:
+    color: "FLEX_COLOR"
+    display_color: [200, 100, 100]
+    description: "Innovation & Risk"
+    
+    work_output_modes:
+      STABILITY:
+        efficiency: 1.8
+        cost_energy: 0.4
+      SOCIAL:
+        efficiency: 1.2
+      KNOWLEDGE:
+        efficiency: 1.0
+      MATERIAL:
+        efficiency: 0.8
+      ENERGY:
+        efficiency: 0.5
+    
+    zone_bonuses:
+      stress_pressure_attraction: 1.0
+      desperation_scaling: 1.0
+  
+  PANTHEON:
+    color: "GOLD"
+    display_color: [255, 215, 0]
+    description: "Ideological Sanctuary"
+
+    unlock_requirement: 8  # Minimum total jobs before PANTHEON access
+    unlock_type: "total_jobs"  # Options: "total_jobs", "unique_zones", "total_visits"
+  
+    crisis_thresholds:
+    stress: 80
+    coherence: 0.25
+    desperation_money: 5
+    desperation_stress: 50
+    desperation_esteem: 0.4
+
+    work_output_modes:
+      SOCIAL:
+        efficiency: 2.5
+        cost_money: 0.0  # Free entrance
+      STABILITY:
+        efficiency: 2.0
+        cost_stress_multiplier: 0.5  # Reduces stress heavily
+      KNOWLEDGE:
+        efficiency: 0.5
+        doctrine_bias_gain: 0.06
+      MATERIAL:
+        efficiency: 0.1  # Almost no material output
+      ENERGY:
+        efficiency: -0.4  # Drains (non-gurus) or +0.3 (gurus)
+    
+    guru_mechanics:
+      visit_threshold: 10
+      conversion_speed_multiplier: 2.0
+      influence_radius_pixels: 300.0
+    
+    doctrines:
+      TRANSCENDENCE:
+        assignment_condition: "stress > 60"
+        targets: ["STABILITY"]
+      MERITOCRACY:
+        assignment_condition: "money < 20"
+        targets: ["MATERIAL"]
+      COHERENCE:
+        assignment_condition: "default"
+        targets: ["SOCIAL"]
+
+# ===== NPC MODE PREFERENCE (how they value outputs) =====
+npc_mode_priorities:
+  survival:
+    # When desperate, NPCs value MATERIAL first
+    priority: ["MATERIAL", "STABILITY", "ENERGY"]
+  
+  growth:
+    # When stable, NPCs seek KNOWLEDGE and SOCIAL
+    priority: ["KNOWLEDGE", "SOCIAL", "STABILITY"]
+  
+  collapse:
+    # When collapsing, NPCs seek STABILITY then SOCIAL
+    priority: ["STABILITY", "SOCIAL", "MATERIAL"]
+
+# ===== TERRITORY-SPECIFIC INITIALIZATION =====
+territories:
+  ZONE_1:
+    name: "ZONE 1 - Prosperity"
+    center: [0.5, 0.8]
+    
+    zones:
+      SCIENCE:
+        npc_count: 15
+        initial_coherence: [0.65, 0.95]
+        initial_resources:
+          MATERIAL: 250.0
+          ENERGY: 100.0
+          SOCIAL: 0.7
+          KNOWLEDGE: 0.3
+          STABILITY: 10.0
+      
+      TRADE:
+        npc_count: 12
+        initial_coherence: [0.60, 0.90]
+        initial_resources:
+          MATERIAL: 300.0
+          ENERGY: 100.0
+          SOCIAL: 0.6
+          KNOWLEDGE: 0.2
+          STABILITY: 15.0
+      
+      DEVELOPMENT:
+        npc_count: 18
+        initial_coherence: [0.55, 0.85]
+        initial_resources:
+          MATERIAL: 200.0
+          ENERGY: 100.0
+          SOCIAL: 0.5
+          KNOWLEDGE: 0.4
+          STABILITY: 20.0
+      
+      FLEX:
+        npc_count: 10
+        initial_coherence: [0.60, 0.88]
+        initial_resources:
+          MATERIAL: 220.0
+          ENERGY: 100.0
+          SOCIAL: 0.65
+          KNOWLEDGE: 0.35
+          STABILITY: 25.0
+      
+      PANTHEON:
+        npc_count: 0
+        initial_coherence: [0.5, 0.9]
+        initial_resources:
+          MATERIAL: 190.0
+          ENERGY: 100.0
+          SOCIAL: 0.5
+          KNOWLEDGE: 0.25
+          STABILITY: 30.0
+    
+    # Zone efficiency modifiers
+    zone_modifiers:
+      SCIENCE:
+        efficiency_scale: 1.1
+        attraction_weight: 1.2
+      TRADE:
+        efficiency_scale: 1.15
+        attraction_weight: 1.0
+      DEVELOPMENT:
+        efficiency_scale: 1.05
+        attraction_weight: 0.9
+      FLEX:
+        efficiency_scale: 1.0
+        attraction_weight: 1.1
+      PANTHEON:
+        indoctrination_speed: 0.8
+    
+    coherence_decay: 0.995
+    collapse_threshold: 0.3
+    dissonance_threshold: 120.0
+
+  ZONE_2:
+    name: "ZONE 2 - Struggle"
+    center: [0.2, 0.2]
+    
+    zones:
+      SCIENCE:
+        npc_count: 8
+        initial_coherence: [0.40, 0.70]
+        initial_resources:
+          MATERIAL: 100.0
+          ENERGY: 75.0
+          SOCIAL: 0.4
+          KNOWLEDGE: 0.15
+          STABILITY: 50.0
+      
+      TRADE:
+        npc_count: 10
+        initial_coherence: [0.45, 0.75]
+        initial_resources:
+          MATERIAL: 120.0
+          ENERGY: 80.0
+          SOCIAL: 0.35
+          KNOWLEDGE: 0.1
+          STABILITY: 60.0
+      
+      DEVELOPMENT:
+        npc_count: 12
+        initial_coherence: [0.35, 0.65]
+        initial_resources:
+          MATERIAL: 80.0
+          ENERGY: 70.0
+          SOCIAL: 0.3
+          KNOWLEDGE: 0.2
+          STABILITY: 70.0
+      
+      FLEX:
+        npc_count: 7
+        initial_coherence: [0.40, 0.68]
+        initial_resources:
+          MATERIAL: 90.0
+          ENERGY: 65.0
+          SOCIAL: 0.32
+          KNOWLEDGE: 0.18
+          STABILITY: 75.0
+      
+      PANTHEON:
+        npc_count: 0
+        initial_coherence: [0.3, 0.6]
+        initial_resources:
+          MATERIAL: 50.0
+          ENERGY: 50.0
+          SOCIAL: 0.2
+          KNOWLEDGE: 0.1
+          STABILITY: 80.0
+    
+    zone_modifiers:
+      SCIENCE:
+        efficiency_scale: 0.85
+        attraction_weight: 0.8
+      TRADE:
+        efficiency_scale: 0.90
+        attraction_weight: 1.3
+      DEVELOPMENT:
+        efficiency_scale: 0.8
+        attraction_weight: 1.0
+      FLEX:
+        efficiency_scale: 0.75
+        attraction_weight: 0.7
+      PANTHEON:
+        indoctrination_speed: 1.5
+        vulnerability_multiplier: 1.8
+    
+    coherence_decay: 0.990
+    collapse_threshold: 0.35
+    dissonance_threshold: 100.0
+    pantheon_danger: "HIGH"
+
+  ZONE_3:
+    name: "ZONE 3 - Instability"
+    center: [0.8, 0.2]
+    
+    zones:
+      SCIENCE:
+        npc_count: 6
+        initial_coherence: [0.30, 0.60]
+        initial_resources:
+          MATERIAL: 70.0
+          ENERGY: 60.0
+          SOCIAL: 0.3
+          KNOWLEDGE: 0.1
+          STABILITY: 65.0
+      
+      TRADE:
+        npc_count: 8
+        initial_coherence: [0.35, 0.65]
+        initial_resources:
+          MATERIAL: 80.0
+          ENERGY: 65.0
+          SOCIAL: 0.25
+          KNOWLEDGE: 0.08
+          STABILITY: 70.0
+      
+      DEVELOPMENT:
+        npc_count: 10
+        initial_coherence: [0.25, 0.55]
+        initial_resources:
+          MATERIAL: 60.0
+          ENERGY: 55.0
+          SOCIAL: 0.2
+          KNOWLEDGE: 0.12
+          STABILITY: 80.0
+      
+      FLEX:
+        npc_count: 5
+        initial_coherence: [0.30, 0.58]
+        initial_resources:
+          MATERIAL: 50.0
+          ENERGY: 50.0
+          SOCIAL: 0.22
+          KNOWLEDGE: 0.1
+          STABILITY: 85.0
+      
+      PANTHEON:
+        npc_count: 0
+        initial_coherence: [0.2, 0.5]
+        initial_resources:
+          MATERIAL: 30.0
+          ENERGY: 40.0
+          SOCIAL: 0.15
+          KNOWLEDGE: 0.05
+          STABILITY: 90.0
+    
+    zone_modifiers:
+      SCIENCE:
+        efficiency_scale: 0.7
+        attraction_weight: 0.5
+      TRADE:
+        efficiency_scale: 0.0
+        attraction_weight: 1.5
+      DEVELOPMENT:
+        efficiency_scale: 0.0
+        attraction_weight: 0.8
+      FLEX:
+        efficiency_scale: 0.60
+        attraction_weight: 0.6
+      PANTHEON:
+        indoctrination_speed: 2.0
+        vulnerability_multiplier: 2.5
+        guru_danger: true
+    
+    coherence_decay: 0.985
+    collapse_threshold: 0.40
+    dissonance_threshold: 90.0
+    pantheon_danger: "CRITICAL"
+
+# ===== SHARED MECHANICS =====
+shift:
+  duration: 300
+  travel_ratio: 0.25
+
+anchors:
+  HOME:
+    norm: [0.50, 0.50]
+    color: "ORANGE"
+    radius: 15
+  
+  CENTRAL:
+    norm: [0.30, 0.85]
+    color: "TEAL"
+    radius: 15
+  
+  SCIENCE:
+    norm: [0.25, 0.10]
+  TRADE:
+    norm: [0.75, 0.10]
+  DEVELOPMENT:
+    norm: [0.90, 0.55]
+  FLEX:
+    norm: [0.10, 0.55]
+  PANTHEON:
+    norm: [0.50, 0.65]
+
+zone_travel_costs:
+  SCIENCE:
+    MATERIAL_cost: 0.05
+    ENERGY_cost: 0.15
+    description: "To research labs"
+  TRADE:
+    MATERIAL_cost: 0.03
+    ENERGY_cost: 0.10
+    description: "To marketplace"
+  DEVELOPMENT:
+    MATERIAL_cost: 0.08
+    ENERGY_cost: 0.20
+    description: "To industrial zone"
+  FLEX:
+    MATERIAL_cost: 0.02
+    ENERGY_cost: 0.05
+    description: "To flexible workspace"
+  CENTRAL:
+    MATERIAL_cost: 0.02
+    ENERGY_cost: 0.08
+    description: "To central hub"
+  HOME:
+    MATERIAL_cost: 0.02
+    ENERGY_cost: 0.08
+    description: "Returning home"
+  PANTHEON:
+    MATERIAL_cost: 0.00
+    ENERGY_cost: 0.05
+    description: "To ideological sanctuary"
+
+coherence:
+  inertia: 0.8
+  stress_penalty_rate: 0.001
+  
+  withdrawal:
+    visit_threshold: 7
+    timer_limit: 50
+    coherence_loss: 0.15
+    self_esteem_loss: 0.08
+    stability_loss: 20.0
+
+decision:
+  phase_thresholds:
+    material_survival: 10.0
+    stability_stabilization: 60.0
+    energy_exploration: 70.0
+    coherence_exploration: 0.65
+  
+  switch_penalty_scale: 0.6
+  novelty_bonus: 0.2
+
+pantheon:
+  enabled: true
+  doctrine_override_enabled: true
+  
+  indoctrination:
+    visit_threshold_doctrine: 5
+    visit_threshold_guru: 10
+    bias_gain: 0.03
+    guru_multiplier: 2.0
+
+rendering:
+  npc_radius: 8
+  npc_trust_ring_radius: 11
+  
+  guru:
+    pulse_period: 50
+    pulse_amplitude: 10
+    ring_radius: 18
+  
+  inspector:
+    enabled: true
+    max_lines: 15
+    # ===== CORRECTED FILE: coherence_trust_system.py =====
